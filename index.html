@@ -52,32 +52,34 @@
         </section>
 
         <section class="panel dashboard-panel">
-          <div class="panel-header">
-            <h2>Analytics Dashboard</h2>
-          </div>
+          <h2 class="dashboard-title">MASTER ENGINE v5.27.0 PERFORMANCE ANALYTICS</h2>
 
-          <div class="metrics-grid">
-            <div class="metric-card accent">
-              <h3>Overall Performance</h3>
-              <div class="metric-row"><span>Total Bets</span><strong id="totalBets">0</strong></div>
-              <div class="metric-row"><span>Staked</span><strong id="totalStaked">£0.00</strong></div>
-              <div class="metric-row"><span>Returns</span><strong id="totalReturns">£0.00</strong></div>
-              <div class="metric-row"><span>Net P/L</span><strong id="totalPnl">£0.00</strong></div>
-              <div class="metric-row"><span>ROI</span><strong id="roi">0.00%</strong></div>
-              <div class="metric-row"><span>Win Rate</span><strong id="winRate">0.00%</strong></div>
+          <div class="dashboard-grid">
+            <div class="dashboard-section">
+              <div class="section-title">OVERALL PERFORMANCE SUMMARY</div>
+              <div id="overallMetrics" class="metric-list"></div>
             </div>
 
-            <div class="metric-card">
-              <h3>7-Day Rolling</h3>
-              <div class="metric-row"><span>7-Day Staked</span><strong id="rollingStaked">£0.00</strong></div>
-              <div class="metric-row"><span>7-Day Returns</span><strong id="rollingReturns">£0.00</strong></div>
-              <div class="metric-row"><span>7-Day Net P/L</span><strong id="rollingPnl">£0.00</strong></div>
-              <div class="metric-row"><span>7-Day ROI</span><strong id="rollingRoi">0.00%</strong></div>
+            <div class="dashboard-section alt">
+              <div class="section-title secondary">7-DAY ROLLING PERFORMANCE</div>
+              <div id="rollingMetrics" class="metric-list"></div>
             </div>
 
-            <div class="metric-card">
-              <h3>Tier Profitability</h3>
-              <div id="tierBreakdown" class="tier-list"></div>
+            <div class="dashboard-section wide">
+              <div class="section-title tertiary">TIER PROFITABILITY BREAKDOWN</div>
+              <table class="tier-table">
+                <thead>
+                  <tr>
+                    <th>Tier Level</th>
+                    <th>Bets</th>
+                    <th>Staked (£)</th>
+                    <th>Returns (£)</th>
+                    <th>Net P/L (£)</th>
+                    <th>Tier ROI (%)</th>
+                  </tr>
+                </thead>
+                <tbody id="tierTableBody"></tbody>
+              </table>
             </div>
           </div>
         </section>
