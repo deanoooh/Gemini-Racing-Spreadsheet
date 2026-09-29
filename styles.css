@@ -63,11 +63,6 @@ h2 {
   font-size: 1.35rem;
 }
 
-h3 {
-  margin: 0 0 10px;
-  font-size: 1.05rem;
-}
-
 .header-actions {
   display: flex;
   gap: 10px;
@@ -167,27 +162,69 @@ button.danger {
   font-size: 0.85rem;
 }
 
-.metrics-grid {
+.dashboard-panel {
+  padding: 18px 18px 8px;
+}
+
+.dashboard-title {
+  background: #0b5394;
+  color: white;
+  text-align: center;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 1.15rem;
+  margin-bottom: 18px;
+}
+
+.dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 18px;
 }
 
-.metric-card {
-  background: var(--panel-alt);
+.dashboard-section {
+  background: #f8fbff;
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 18px;
+  border-radius: 12px;
+  padding: 14px;
 }
 
-.metric-card.accent {
-  background: linear-gradient(135deg, #edf7f3, #f9fbff);
+.dashboard-section.alt {
+  background: #fffdf5;
+}
+
+.dashboard-section.wide {
+  grid-column: 1 / -1;
+}
+
+.section-title {
+  background: #d9ead3;
+  color: #1f1f1f;
+  font-weight: 700;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.section-title.secondary {
+  background: #fff2cc;
+}
+
+.section-title.tertiary {
+  background: #cfe2f3;
+}
+
+.metric-list {
+  display: grid;
+  gap: 6px;
 }
 
 .metric-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 18px;
   padding: 7px 0;
   border-bottom: 1px solid rgba(120, 136, 160, 0.15);
 }
@@ -204,19 +241,23 @@ button.danger {
   font-size: 1rem;
 }
 
-.tier-list {
-  display: grid;
-  gap: 8px;
+.tier-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
 }
 
-.tier-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: white;
+.tier-table th,
+.tier-table td {
   border: 1px solid var(--border);
-  border-radius: 8px;
   padding: 8px 10px;
+  text-align: center;
+  background: white;
+}
+
+.tier-table th {
+  background: #eeeeee;
+  font-weight: 700;
 }
 
 .positive {
