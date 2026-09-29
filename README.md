@@ -1,316 +1,88 @@
-const STORAGE_KEY = 'gemini-racing-spreadsheet-v1';
+# Gemini Racing Spreadsheet
 
-const initialRows = [
-  {
-    date: '2026-09-28',
-    raceTime: '19:30',
-    course: 'Wolverhampton',
-    distance: '1m 142y',
-    tier: 'Primary',
-    horseName: 'Crown The Future',
-    odds: 5,
-    betType: 'E/W',
-    stake: 1,
-    result: 'Won',
-    placePaid: 'Yes',
-    return: 4,
-    pnl: 3
-  }
-];
+A browser-based racing performance analytics spreadsheet built with vanilla JavaScript, HTML, and CSS.
 
-const tableBody = document.getElementById('logTableBody');
-const addRowBtn = document.getElementById('addRowBtn');
-const loadSampleBtn = document.getElementById('loadSampleBtn');
-const resetBtn = document.getElementById('resetBtn');
+## Features
 
-function safeNumber(value) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : 0;
-}
+- **Selections Log** — Track all your race selections with date, course, horse name, odds, bet type, and results
+- **Analytics Dashboard** — View real-time performance metrics:
+  - Overall performance summary (total bets, staked, returns, P/L, ROI, win rate, strike rate)
+  - 7-day rolling performance audit
+  - Tier profitability breakdown (Primary, Secondary, Chaos)
+- **Persistent Storage** — Your data is saved locally in your browser
+- **Live URL** — Access from anywhere via GitHub Pages
 
-function currency(value) {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(value || 0);
-}
+## Getting Started
 
-function percent(value) {
-  return `${((value || 0) * 100).toFixed(2)}%`;
-}
+### Online (GitHub Pages)
 
-function calculatePnl(row) {
-  const stake = safeNumber(row.stake);
-  const returnValue = safeNumber(row.return);
-  return returnValue - stake;
-}
+The app is hosted live at:
+**https://deanoooh.github.io/Gemini-Racing-Spreadsheet/**
 
-function normalizeRow(row) {
-  const normalized = { ...row };
-  normalized.odds = safeNumber(row.odds);
-  normalized.stake = safeNumber(row.stake);
-  normalized.return = safeNumber(row.return);
-  normalized.pnl = calculatePnl(normalized);
-  return normalized;
-}
+Just open the link in your browser and start tracking!
 
-function getRows() {
-  const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-  if (!raw || !Array.isArray(raw) || raw.length === 0) {
-    return initialRows.map(normalizeRow);
-  }
+### Local Development
 
-  return raw.map(normalizeRow);
-}
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/deanoooh/Gemini-Racing-Spreadsheet.git
+   cd Gemini-Racing-Spreadsheet
+   ```
 
-function persistRows(rows) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
-}
+2. Open `index.html` in your browser (no build process needed)
 
-function getResultOptions() {
-  return ['Won', 'Placed', 'Lost', 'Void'];
-}
+## How It Works
 
-function getTierOptions() {
-  return ['Primary', 'Secondary', 'Chaos'];
-}
+- **Add rows** — Click "+ Add row" to add a new selection
+- **Edit fields** — Click any cell to edit date, course, odds, stake, result, return, etc.
+- **Automatic calculations** — P/L is calculated as Return - Stake for each row
+- **Dashboard updates** — Metrics recalculate in real-time as you update data
+- **Load sample** — Click "Load sample" to populate with example data
+- **Reset** — Click "Reset" to clear all data and start fresh
 
-function getBetTypeOptions() {
-  return ['Win', 'E/W', 'Place', 'Each Way', 'Forecast'];
-}
+## Formula Logic
 
-function buildRowHtml(row, index) {
-  const resultOptions = getResultOptions()
-    .map((option) => `<option value="${option}" ${row.result === option ? 'selected' : ''}>${option}</option>`)
-    .join('');
+All calculations mirror the original Google Sheets formulas:
 
-  const tierOptions = getTierOptions()
-    .map((option) => `<option value="${option}" ${row.tier === option ? 'selected' : ''}>${option}</option>`)
-    .join('');
+- **Total Bets** — `COUNTA(horseName)` — count of non-empty horse names
+- **Total Staked** — `SUM(stake)` — sum of all stakes
+- **Total Returns** — `SUM(return)` — sum of all returns
+- **Net P/L** — `SUM(pnl)` — sum of individual P/L values
+- **Overall ROI** — `IF(staked > 0, pnl / staked, 0)` — percentage return on investment
+- **Win Rate** — `IF(total > 0, wins / total, 0)` — percentage of "Won" results
+- **Strike Rate** — `IF(total > 0, (wins + placed) / total, 0)` — percentage of "Won" + "Placed"
+- **7-Day Metrics** — Filtered by date within last 7 days
+- **Tier ROI** — Per-tier breakdown of profitability
 
-  const betTypeOptions = getBetTypeOptions()
-    .map((option) => `<option value="${option}" ${row.betType === option ? 'selected' : ''}>${option}</option>`)
-    .join('');
+## Data Storage
 
-  return `
-    <tr data-index="${index}">
-      <td><input data-field="date" type="date" value="${row.date || ''}" /></td>
-      <td><input data-field="raceTime" type="text" value="${row.raceTime || ''}" /></td>
-      <td><input data-field="course" type="text" value="${row.course || ''}" /></td>
-      <td><input data-field="distance" type="text" value="${row.distance || ''}" /></td>
-      <td>
-        <select data-field="tier">
-          ${tierOptions}
-        </select>
-      </td>
-      <td><input data-field="horseName" type="text" value="${row.horseName || ''}" /></td>
-      <td><input data-field="odds" type="number" step="0.01" value="${row.odds || 0}" /></td>
-      <td>
-        <select data-field="betType">
-          ${betTypeOptions}
-        </select>
-      </td>
-      <td><input data-field="stake" type="number" step="0.01" value="${row.stake || 0}" /></td>
-      <td>
-        <select data-field="result">
-          ${resultOptions}
-        </select>
-      </td>
-      <td><input data-field="placePaid" type="text" value="${row.placePaid || ''}" /></td>
-      <td><input data-field="return" type="number" step="0.01" value="${row.return || 0}" /></td>
-      <td>${currency(row.pnl || 0)}</td>
-      <td class="actions-col"><button type="button" class="delete-btn" data-delete-index="${index}">Delete</button></td>
-    </tr>
-  `;
-}
+Your data is stored in your browser's **localStorage** under the key `gemini-racing-spreadsheet-v1`. It persists across sessions and will not be deleted unless you click "Reset" or manually clear browser data.
 
-function renderTable() {
-  const rows = getRows();
-  tableBody.innerHTML = rows.map(buildRowHtml).join('');
-  bindTableEvents();
-  updateDashboard();
-}
+## Technologies
 
-function bindTableEvents() {
-  tableBody.querySelectorAll('input, select').forEach((element) => {
-    element.addEventListener('input', handleRowChange);
-    element.addEventListener('change', handleRowChange);
-  });
+- **HTML5** — Semantic markup
+- **CSS3** — Responsive styling with CSS variables
+- **Vanilla JavaScript** — No dependencies, runs entirely in the browser
 
-  tableBody.querySelectorAll('.delete-btn').forEach((button) => {
-    button.addEventListener('click', () => {
-      const rows = getRows();
-      const index = Number(button.dataset.deleteIndex);
-      rows.splice(index, 1);
-      persistRows(rows);
-      renderTable();
-    });
-  });
-}
+## Browser Support
 
-function handleRowChange(event) {
-  const rowIndex = Number(event.target.closest('tr').dataset.index);
-  const rows = getRows();
-  const field = event.target.dataset.field;
-  const value = event.target.type === 'number' ? safeNumber(event.target.value) : event.target.value;
+Works in all modern browsers that support:
+- localStorage
+- ES6 JavaScript
+- CSS Grid and Flexbox
 
-  rows[rowIndex][field] = value;
-  rows[rowIndex] = normalizeRow(rows[rowIndex]);
-  persistRows(rows);
-  renderTable();
-}
+## Future Enhancements
 
-function addRow() {
-  const rows = getRows();
-  rows.push({
-    date: new Date().toISOString().slice(0, 10),
-    raceTime: '',
-    course: '',
-    distance: '',
-    tier: 'Primary',
-    horseName: '',
-    odds: 0,
-    betType: 'Win',
-    stake: 0,
-    result: 'Lost',
-    placePaid: '',
-    return: 0,
-    pnl: 0
-  });
-  persistRows(rows);
-  renderTable();
-}
+- Export to CSV/Excel
+- Import from file
+- Graph visualizations
+- Advanced filtering and sorting
+- Data backup/sync
 
-function setSampleData() {
-  const rows = [
-    {
-      date: '2026-09-28',
-      raceTime: '19:30',
-      course: 'Wolverhampton',
-      distance: '1m 142y',
-      tier: 'Primary',
-      horseName: 'Crown The Future',
-      odds: 5,
-      betType: 'E/W',
-      stake: 1,
-      result: 'Won',
-      placePaid: 'Yes',
-      return: 4,
-      pnl: 3
-    },
-    {
-      date: '2026-09-27',
-      raceTime: '15:45',
-      course: 'Ascot',
-      distance: '1m 4f',
-      tier: 'Secondary',
-      horseName: 'Irish Whisper',
-      odds: 3.5,
-      betType: 'Win',
-      stake: 2,
-      result: 'Placed',
-      placePaid: 'No',
-      return: 0,
-      pnl: -2
-    },
-    {
-      date: '2026-09-26',
-      raceTime: '17:20',
-      course: 'Haydock',
-      distance: '5f',
-      tier: 'Chaos',
-      horseName: 'Night Signal',
-      odds: 8,
-      betType: 'E/W',
-      stake: 1.5,
-      result: 'Lost',
-      placePaid: 'No',
-      return: 0,
-      pnl: -1.5
-    }
-  ].map(normalizeRow);
+## License
 
-  persistRows(rows);
-  renderTable();
-}
+Open source — feel free to use, modify, and distribute.
 
-function clearAll() {
-  localStorage.removeItem(STORAGE_KEY);
-  renderTable();
-}
+---
 
-function updateDashboard() {
-  const rows = getRows();
-  const totalBets = rows.length;
-  const totalStaked = rows.reduce((sum, row) => sum + safeNumber(row.stake), 0);
-  const totalReturns = rows.reduce((sum, row) => sum + safeNumber(row.return), 0);
-  const totalPnl = rows.reduce((sum, row) => sum + safeNumber(row.pnl), 0);
-  const wins = rows.filter((row) => row.result === 'Won').length;
-  const roi = totalStaked > 0 ? totalPnl / totalStaked : 0;
-  const winRate = totalBets > 0 ? wins / totalBets : 0;
-
-  const today = new Date();
-  const cutoff = new Date();
-  cutoff.setDate(today.getDate() - 7);
-
-  const rollingRows = rows.filter((row) => {
-    if (!row.date) return false;
-    const rowDate = new Date(row.date);
-    return rowDate >= cutoff && rowDate <= today;
-  });
-
-  const rollingStaked = rollingRows.reduce((sum, row) => sum + safeNumber(row.stake), 0);
-  const rollingReturns = rollingRows.reduce((sum, row) => sum + safeNumber(row.return), 0);
-  const rollingPnl = rollingRows.reduce((sum, row) => sum + safeNumber(row.pnl), 0);
-  const rollingRoi = rollingStaked > 0 ? rollingPnl / rollingStaked : 0;
-
-  document.getElementById('totalBets').textContent = String(totalBets);
-  document.getElementById('totalStaked').textContent = currency(totalStaked);
-  document.getElementById('totalReturns').textContent = currency(totalReturns);
-  document.getElementById('totalPnl').textContent = currency(totalPnl);
-  document.getElementById('roi').textContent = percent(roi);
-  document.getElementById('winRate').textContent = percent(winRate);
-
-  document.getElementById('rollingStaked').textContent = currency(rollingStaked);
-  document.getElementById('rollingReturns').textContent = currency(rollingReturns);
-  document.getElementById('rollingPnl').textContent = currency(rollingPnl);
-  document.getElementById('rollingRoi').textContent = percent(rollingRoi);
-
-  const tierGroups = getTierOptions().map((tier) => {
-    const filtered = rows.filter((row) => row.tier === tier);
-    const stake = filtered.reduce((sum, row) => sum + safeNumber(row.stake), 0);
-    const returns = filtered.reduce((sum, row) => sum + safeNumber(row.return), 0);
-    const pnl = filtered.reduce((sum, row) => sum + safeNumber(row.pnl), 0);
-    const roiTier = stake > 0 ? pnl / stake : 0;
-
-    return {
-      tier,
-      bets: filtered.length,
-      stake,
-      returns,
-      pnl,
-      roiTier
-    };
-  });
-
-  const tierContainer = document.getElementById('tierBreakdown');
-  tierContainer.innerHTML = tierGroups
-    .map((entry) => `
-      <div class="tier-item">
-        <span>${entry.tier}</span>
-        <strong class="${entry.pnl >= 0 ? 'positive' : 'negative'}">${currency(entry.pnl)}</strong>
-      </div>
-    `)
-    .join('');
-
-  const pnlElement = document.getElementById('totalPnl');
-  pnlElement.className = totalPnl >= 0 ? 'positive' : 'negative';
-}
-
-addRowBtn.addEventListener('click', addRow);
-loadSampleBtn.addEventListener('click', setSampleData);
-resetBtn.addEventListener('click', clearAll);
-
-renderTable();
+**Questions or feedback?** Feel free to open an issue on GitHub.
