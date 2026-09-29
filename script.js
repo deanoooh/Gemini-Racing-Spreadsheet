@@ -18,11 +18,6 @@ const INITIAL_ROWS = [
   }
 ];
 
-const LOG_FIELDS = [
-  'date', 'raceTime', 'course', 'distance', 'tier', 'horseName',
-  'odds', 'betType', 'stake', 'result', 'placePaid', 'return', 'pnl'
-];
-
 const tableBody = document.getElementById('logTableBody');
 const addRowBtn = document.getElementById('addRowBtn');
 const loadSampleBtn = document.getElementById('loadSampleBtn');
@@ -34,16 +29,18 @@ function safeNumber(value) {
 }
 
 function toCurrency(value) {
+  const amount = safeNumber(value);
   return new Intl.NumberFormat('en-GB', {
     style: 'currency',
     currency: 'GBP',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
-  }).format(value || 0);
+  }).format(amount);
 }
 
 function toPercent(value) {
-  return `${((value || 0) * 100).toFixed(2)}%`;
+  const amount = safeNumber(value);
+  return `${(amount * 100).toFixed(2)}%`;
 }
 
 function normalizeRow(row = {}) {
@@ -60,8 +57,12 @@ function normalizeRow(row = {}) {
   normalized.result = normalized.result || 'Lost';
   normalized.placePaid = normalized.placePaid || '';
   normalized.return = safeNumber(normalized.return);
-  normalized.pnl = normalized.return - normalized.stake;
+  normalized.pnl = safeNumber(normalized.return) - safeNumber(normalized.stake);
   return normalized;
+}
+
+function isFilledRow(row) {
+  return String(row.horseName || '').trim() !== '';
 }
 
 function getRows() {
@@ -253,17 +254,18 @@ function sum(values) {
 }
 
 function countMatches(rows, field, value) {
-  return rows.filter((row) => String(row[field]).trim() === String(value).trim()).length;
+  return rows.filter((row) => String(row[field] || '').trim() === String(value).trim()).length;
 }
 
 function getOverallPerformance(rows) {
-  const totalBets = rows.filter((row) => String(row.horseName || '').trim() !== '').length;
-  const totalStaked = sum(rows.map((row) => row.stake));
-  const totalReturns = sum(rows.map((row) => row.return));
-  const totalPnl = sum(rows.map((row) => row.pnl));
+  const validRows = rows.filter(isFilledRow);
+  const totalBets = validRows.length;
+  const totalStaked = sum(validRows.map((row) => row.stake));
+  const totalReturns = sum(validRows.map((row) => row.return));
+  const totalPnl = sum(validRows.map((row) => row.pnl));
   const overallROI = totalStaked > 0 ? totalPnl / totalStaked : 0;
-  const wins = countMatches(rows, 'result', 'Won');
-  const placed = countMatches(rows, 'result', 'Placed');
+  const wins = countMatches(validRows, 'result', 'Won');
+  const placed = countMatches(validRows, 'result', 'Placed');
   const winRate = totalBets > 0 ? wins / totalBets : 0;
   const strikeRate = totalBets > 0 ? (wins + placed) / totalBets : 0;
 
@@ -284,29 +286,28 @@ function getRollingPerformance(rows) {
   cutoff.setDate(today.getDate() - 7);
 
   const recentRows = rows.filter((row) => {
-    if (!row.date) return false;
+    if (!row.date || !isFilledRow(row)) return false;
     const rowDate = new Date(row.date);
-    return rowDate >= cutoff && rowDate <= today;
+    return !Number.isNaN(rowDate.getTime()) && rowDate >= cutoff && rowDate <= today;
   });
 
-  const staked = sum(recentRows.map((row) => row.stake));
-  const returns = sum(recentRows.map((row) => row.return));
-  const pnl = sum(recentRows.map((row) => row.pnl));
-  const roi = staked > 0 ? pnl / staked : 0;
+  const rollingStaked = sum(recentRows.map((row) => row.stake));
+  const rollingReturns = sum(recentRows.map((row) => row.return));
+  const rollingPnl = sum(recentRows.map((row) => row.pnl));
+  const rollingROI = rollingStaked > 0 ? rollingPnl / rollingStaked : 0;
 
   return {
-    rollingStaked: staked,
-    rollingReturns: returns,
-    rollingPnl: pnl,
-    rollingROI: roi
+    rollingStaked,
+    rollingReturns,
+    rollingPnl,
+    rollingROI
   };
 }
 
 function getTierBreakdown(rows) {
-  const tiers = getTierOptions();
-  return tiers.map((tier) => {
-    const tierRows = rows.filter((row) => row.tier === tier);
-    const bets = tierRows.filter((row) => String(row.horseName || '').trim() !== '').length;
+  return getTierOptions().map((tier) => {
+    const tierRows = rows.filter((row) => row.tier === tier && isFilledRow(row));
+    const bets = tierRows.length;
     const staked = sum(tierRows.map((row) => row.stake));
     const returns = sum(tierRows.map((row) => row.return));
     const pnl = sum(tierRows.map((row) => row.pnl));
