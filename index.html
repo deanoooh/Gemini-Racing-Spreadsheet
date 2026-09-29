@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gemini Racing Spreadsheet</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Racing Analytics</p>
+          <h1>Gemini Racing Spreadsheet</h1>
+        </div>
+        <div class="header-actions">
+          <button id="loadSampleBtn" class="secondary">Load sample</button>
+          <button id="resetBtn" class="danger">Reset</button>
+        </div>
+      </header>
+
+      <main>
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Selections Log</h2>
+            <button id="addRowBtn">+ Add row</button>
+          </div>
+
+          <div class="table-wrap">
+            <table id="logTable">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Race Time</th>
+                  <th>Course</th>
+                  <th>Distance</th>
+                  <th>Tier</th>
+                  <th>Horse Name</th>
+                  <th>Odds</th>
+                  <th>Bet Type</th>
+                  <th>Stake (£)</th>
+                  <th>Result</th>
+                  <th>Place Paid</th>
+                  <th>Return (£)</th>
+                  <th>P/L (£)</th>
+                  <th class="actions-col">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="logTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel dashboard-panel">
+          <div class="panel-header">
+            <h2>Analytics Dashboard</h2>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="metric-card accent">
+              <h3>Overall Performance</h3>
+              <div class="metric-row"><span>Total Bets</span><strong id="totalBets">0</strong></div>
+              <div class="metric-row"><span>Staked</span><strong id="totalStaked">£0.00</strong></div>
+              <div class="metric-row"><span>Returns</span><strong id="totalReturns">£0.00</strong></div>
+              <div class="metric-row"><span>Net P/L</span><strong id="totalPnl">£0.00</strong></div>
+              <div class="metric-row"><span>ROI</span><strong id="roi">0.00%</strong></div>
+              <div class="metric-row"><span>Win Rate</span><strong id="winRate">0.00%</strong></div>
+            </div>
+
+            <div class="metric-card">
+              <h3>7-Day Rolling</h3>
+              <div class="metric-row"><span>7-Day Staked</span><strong id="rollingStaked">£0.00</strong></div>
+              <div class="metric-row"><span>7-Day Returns</span><strong id="rollingReturns">£0.00</strong></div>
+              <div class="metric-row"><span>7-Day Net P/L</span><strong id="rollingPnl">£0.00</strong></div>
+              <div class="metric-row"><span>7-Day ROI</span><strong id="rollingRoi">0.00%</strong></div>
+            </div>
+
+            <div class="metric-card">
+              <h3>Tier Profitability</h3>
+              <div id="tierBreakdown" class="tier-list"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
